@@ -5,7 +5,7 @@ with st.form("user_form"):
     # Form fields
     name = st.text_input("Your Name")
     age = st.number_input("Your Age", min_value=1, max_value=100)
-    gender = st.radio("Select Gender", ["Male", "Female", "Other"])
+    gender = st.radio("What comes next in the sequence? 🟦 🔺 🔵 🟦 🔺 ❓", ["🔵", "🔺", "🟦","🟥"])
     feedback = st.text_area("Your Feedback")
     
     # Form submission button

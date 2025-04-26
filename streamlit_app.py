@@ -7,5 +7,5 @@ st.write(
 if st.button("Go to Form Page"):
     st.switch_page("./pages/form.py")
 
-
-st.image("./assets/sickLeave.jpeg")
+if st.button("Go to stories Page"):
+    st.switch_page("./pages/stories.py")

@@ -4,7 +4,7 @@ import joblib
 from sklearn.preprocessing import LabelEncoder
 
 # Load the saved model
-model = joblib.load('random_forest_model.pkl')
+model = joblib.load('./model/random_forest_model.pkl')
 
 # Load LabelEncoder (you should save it after training as well, if necessary)
 le = LabelEncoder()

@@ -113,8 +113,8 @@ st.markdown("<div class='arrow'>👇</div>", unsafe_allow_html=True)
 
 st.markdown("""
     <div class='button-container'>
-        <a href='/Job_Prediction' class='button-custom'>💡 Take the Test ➜</a>
-        <a href='/pages/Success_Stories.py' class='button-custom button-secondary'>🌟 Success Stories ➜</a>
+        <a href='/test_model' target="_self" class='button-custom'>💡 Take the Test ➜</a>
+        <a href='/pages/stories.py' class='button-custom button-secondary'>🌟 Success Stories ➜</a>
     </div>
 """, unsafe_allow_html=True)
 
@@ -124,10 +124,13 @@ st.markdown("<div class='footer'>Made with 💖 by girls, for girls | #SheCan</d
 
 st.markdown("""
     <div style="display: flex; align-items: center; justify-content: center; gap: 30px; flex-wrap: wrap;">
-        <img src="/assets/images/she.png" alt="SheCan Girl" width="250" style="border-radius: 20px;">
+        <img src="assets/images/she" alt="SheCan Girl" >
         <div style="max-width: 400px; font-size: 1.1em; color: #5e4b56;">
             <p><strong>SheCan</strong> is your guide to discovering your strengths and matching them with the perfect career path. This is where dreams meet action!</p>
         </div>
     </div>
 """, unsafe_allow_html=True)
 st.image("./assets/images/she.png")
+
+if st.button("switch"):
+    st.switch_page("./pages/test_model.py")

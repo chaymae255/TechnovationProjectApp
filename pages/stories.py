@@ -1,68 +1,112 @@
 import streamlit as st
-from PIL import Image, ImageDraw
-import io
-import base64
+import os
+import json
+from PIL import Image, ImageOps
 
-st.set_page_config(page_title="Success Stories", layout="wide")
-st.title("Successful Stories")
+# Page setup
+st.set_page_config(page_title="SheCan Stories", page_icon="🌸", layout="centered")
 
-# Data for the images
-images = [
-    {"id": 1, "path": "./assets/images/asmae.png", "title": "Asmae Boujibar", "career": "NASA Scientist", "description": "First Moroccan woman to work at NASA."},
-    {"id": 2, "path": "./assets/images/sickLeave.jpeg", "title": "Imane Lahmami", "career": "Data Scientist", "description": "Overcame many challenges to pursue a tech career."},
-    {"id": 3, "path": "./assets/images/asmae.png", "title": "Sara Ziani", "career": "Engineer", "description": "Inspired young girls in her village to study STEM."},
-    {"id": 4, "path": "./assets/images/asmae.png", "title": "Nada Kabbaj", "career": "Entrepreneur", "description": "Started her own sustainable fashion brand."}
-]
-  
-# Initialize session state for navigation
-if "selected_story" not in st.session_state:
-    st.session_state.selected_story = None
+# Custom CSS
+st.markdown("""
+    <style>
+     .stApp {
+        background: linear-gradient(to bottom right, #FFE6F0, #F3E5F5);
+        font-family: 'Segoe UI', sans-serif;
+        color: #4A4A4A;
+    }
+    .title {
+        font-size: 3em;
+        text-align: center;
+        color: #c2185b;
+        margin-bottom: 0.5em;
+    }
+    .subtitle {
+        font-size: 1.8em;
+        text-align: left;
+        color: #7b1fa2;
+        margin-top: 2em;
+        padding-left: 20px;
+    }
+    .name {
+        font-size: 1.3em;
+        color: #ad1457;
+        font-weight: bold;
+        margin-top: 10px;
+        text-align: center;
+    }
+    .summary {
+    font-size: 1em;
+    font-style: italic;
+    color: #5e4b56;
+    text-align: center;
+    margin-top: 5px;
+    height: 40px;            /* Fixed height */
+    overflow: hidden;        /* Hide overflow */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+    .back-link {
+        text-align: center;
+        margin-top: 30px;
+    }
+    .back-button {
+        background-color: #F06292;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 30px;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 1em;
+    }
+    .back-button:hover {
+        background-color: #EC407A;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-# Function to go back to the main gallery
-def go_back():
-    st.session_state.selected_story = None
+# Main Title
+st.markdown("<div class='title'>SheCan Stories 💫</div>", unsafe_allow_html=True)
 
-# Function to select a story
-def view_story(story_id):
-    st.session_state.selected_story = story_id
+# Loop through all jobs inside 'assets'
+base_path = os.getcwd()
+assets_dir = os.path.join(base_path, "assets")
 
-# If a story is selected, show detail page
-if st.session_state.selected_story is not None:
-    selected = next(item for item in images if item["id"] == st.session_state.selected_story)
-    st.image(selected["path"], width=200)
-    st.markdown(f"### {selected['title']}")
-    st.markdown(f"**Career:** {selected['career']}")
-    st.markdown(f"**Description:** {selected['description']}")
-    st.button("🔙 Back to stories", on_click=go_back)
+for job in os.listdir(assets_dir):
+    job_path = os.path.join(assets_dir, job)
+    story_dir = os.path.join(job_path, "stories")
+   
 
-# Otherwise, show gallery
-else:
-    num_columns = 3
-    columns = st.columns(num_columns)
+    # Subtitle for the job
+    st.markdown(f"<div class='subtitle'>{job.capitalize()} 👩‍🔧</div>", unsafe_allow_html=True)
 
-    for i, img in enumerate(images):
-        with columns[i % num_columns]:
-            # Load and circular crop image
-            image = Image.open(img["path"]).convert("RGBA")
-            width, height = image.size
-            mask = Image.new("L", (width, height), 0)
-            draw = ImageDraw.Draw(mask)
-            draw.ellipse((0, 0, width, height), fill=255)
-            image.putalpha(mask)
-            buf = io.BytesIO()
-            image.save(buf, format="PNG")
-            buf.seek(0)
-            img_base64 = base64.b64encode(buf.getvalue()).decode('utf-8')
+    # Story Cards
+    cols = st.columns(3)
+    story_count = 0
 
-            # Render image as clickable using button with unique key
-            st.markdown(f'''
-                <div style="text-align:center">
-                    <button style="border:none;background:none;" onclick="fetch('/?story_id={img['id']}')">
-                        <img src="data:image/png;base64,{img_base64}" width="100" height="100" style="border-radius:50%">
-                    </button><br>
-                    <strong>{img["title"]}</strong><br>{img["career"]}
-                </div>
-            ''', unsafe_allow_html=True)
+    for i in range(1, 4):
+        story_path = os.path.join(story_dir, str(i), "data.json")
+        image_path = os.path.join(story_dir, str(i), "profile.png")
 
-            if st.button(f"View {img['title']}", key=f"btn_{img['id']}"):
-                view_story(img["id"])
+        if os.path.exists(story_path) and os.path.exists(image_path):
+            with open(story_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+
+            with cols[story_count % 3]:
+                img = Image.open(image_path)
+                img_resized = ImageOps.fit(img, (180, 180), method=Image.Resampling.LANCZOS, centering=(0.5, 0.5))
+                st.image(img_resized)
+                st.markdown(f"<div class='name'>{data['name']}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div class='summary'>{data['summary']}</div>", unsafe_allow_html=True)
+                with st.expander("Read More"):
+                    st.markdown(data["description"])
+                st.markdown("---")
+
+            story_count += 1
+
+# Back Button
+st.markdown("""
+    <div class='back-link'>
+        <a href='/' class='back-button'>⬅ Back to Home</a>
+    </div>
+""", unsafe_allow_html=True)

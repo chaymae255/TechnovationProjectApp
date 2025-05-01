@@ -116,3 +116,7 @@ if submit_button:
     
 else:
     st.warning("We don't yet have a dedicated page for your career. Check back soon!")
+
+if st.button("stg"): 
+    st.switch_page("./pages/prediction.py")
+    

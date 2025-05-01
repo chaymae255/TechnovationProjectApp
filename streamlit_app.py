@@ -1,4 +1,5 @@
 import streamlit as st
+import os
 
 # ---------- Page Config ----------
 st.set_page_config(
@@ -131,6 +132,3 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 st.image("./assets/images/she.png")
-
-if st.button("switch"):
-    st.switch_page("./pages/test_model.py")

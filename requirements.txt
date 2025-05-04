@@ -3,3 +3,9 @@ scikit-learn
 joblib
 pandas
 numpy
+os
+plotly
+matplotlib
+json
+PIL
+re

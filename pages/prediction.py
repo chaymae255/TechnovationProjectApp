@@ -4,6 +4,7 @@ import joblib
 from sklearn.preprocessing import LabelEncoder
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
+import re
 
 # ---------- Page Config ----------
 st.set_page_config(
@@ -15,17 +16,23 @@ st.set_page_config(
 # ---------- Custom CSS ----------
 st.markdown("""
     <style>
+    .footer {
+        text-align: center;
+        margin-top: 50px;
+        font-size: 13px;
+        color: #777;
+    }
     .stApp {
         background: linear-gradient(135deg, #fff0f5, #f3e5f5);
         font-family: 'Trebuchet MS', sans-serif;
         color: #4a4a4a;
         padding: 20px;
     }
-    h1 {
+   h1 {
         text-align: center;
-        color: #b03a64;
-        font-size: 2.8em;
-        margin-bottom: 10px;
+        font-size: 3em;
+        color: #c2185b;
+        margin-bottom: 0.2em;
     }
     .career-container {
         display: flex;
@@ -47,7 +54,8 @@ st.markdown("""
         box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
     }
     .back-button {
-        margin-top: 30px;
+        text-align:center;
+        margin-top: 200px;
         background-color: #f48fb1;
         color: white;
         padding: 12px 30px;
@@ -60,193 +68,212 @@ st.markdown("""
     .back-button:hover {
         background-color: #ec407a;
     }
-  s
+
     </style>
 """, unsafe_allow_html=True)
 
 
-# ---------- Visualisation of probability ----------
-
-if "probabilities" in st.session_state: 
-    probabilities = st.session_state.get("probabilities")
-    class_labels = st.session_state.get("class_labels")
-    prob_df = pd.DataFrame(probabilities, columns=class_labels)
-    prob_df = prob_df.transpose()  # Transpose to get job titles on the y-axis
-    prob_df.columns = ['Probability (%)']
-    prob_df['Probability (%)'] = prob_df['Probability (%)'] * 100  # Convert to percentage
-    prob_df = prob_df.sort_values('Probability (%)', ascending=False)
-   
-    
-     
-    # Show the most likely job profession
-    most_likely_job = prob_df.idxmax()[0]  # Get the job profession with the highest probability
-    st.subheader(f"The most likely job for you is: {most_likely_job} with {prob_df.max()[0]:.2f}% probability.")
-  
-    col1, col2 = st.columns(2)  # Create three columns to center the image
-    with col1:
-        # ------Pie chart
-        # Select top 5 jobs to avoid clutter
-        top_probs = prob_df.head(5)
-        fig, ax = plt.subplots(figsize=(4, 4))  # Make it square and smaller
-        ax.pie(
-            top_probs['Probability (%)'], 
-            labels=top_probs.index, 
-            autopct='%1.1f%%', 
-            startangle=140,
-            colors=plt.cm.Paired.colors
-        )
-        ax.axis('equal')  # Equal aspect ratio ensures pie is drawn as a circle.
-        st.pyplot(fig, clear_figure=True)
-
-    #st.subheader("How each job matches your profile:")
-    # for job, prob in prob_df['Probability (%)'].head(10).items():
-    #     st.markdown(f"**{job}**")
-    #     st.progress(int(prob))
-
-    with col2:
-        #----how each skill influence the choice
-        skills = ['Linguistic', 'Musical', 'Bodily', 'Logical - Mathematical', 
-                'Spatial-Visualization', 'Interpersonal', 'Intrapersonal', 'Naturalist']
-        values = st.session_state.get("user_skills", [10]*8)  # fallback to default
-        fig = go.Figure(data=go.Scatterpolar(
-                r=values,
-                theta=skills,
-                fill='toself',
-                name='Your Profile'
-            ))
-        fig.update_layout(
-        polar=dict(radialaxis=dict(visible=True, range=[0, 20])),
-        showlegend=False,
-        autosize=False,
-        width=300,
-        height=300,  # Match to matplotlib figure
-       #margin=dict(l=40, r=40, t=40, b=40)  # Reduce margin to align visually
-    )
-        st.plotly_chart(fig)
-    
-
 # ---------- Job Info Dictionary ----------
 job_data = {
-    "astronomer": {
+    "Astronomer": {
         "title": "Astronomer 🌌",
         "description": "Astronomers study celestial objects and phenomena, exploring the origins and evolution of the universe.",
-        "image": "./assets/jobs/astronomer.png"
+        "links": [
+            {"label": "IAU OAE National Astronomy Education", "url": "https://astro4edu.org/naec-network/MA"},
+            {"label": "universities for Astrophysics and Astronomy", "url": "https://edurank.org/physics/astrophysics/ma/"},
+            {"label": "Astronomer Salary", "url": "https://www.salaryexpert.com/salary/job/astronomer/morocco"}
+            ]  
     },
     "geologist": {
         "title": "Geologist 🪨",
         "description": "Geologists analyze Earth's materials, structures, and processes to understand its history and predict future changes.",
-        "image": "./assets/jobs/geologist.png"
+    "links": [
+            {"label": "7 Best universities for Geology in Morocco", "url": "https://edurank.org/environmental-science/geology/ma/"},
+            {"label": "Fes- Bachelor programs in Earth Sciences", "url": "https://free-apply.com/en/articles/country/2542007/city/2548885/degree/1/program/25"},
+            {"label": "Geology Studies in Morocco", "url": "https://www.moroccodemia.com/en/geology-studies-in-morocco/"}
+            ]  
+          
     },
     "marine_biologist": {
         "title": "Marine Biologist 🐠",
         "description": "Marine biologists research ocean ecosystems, studying marine organisms and their interactions with the environment.",
-        "image": "./assets/jobs/marine_biologist.png"
-    },
+ "links": [
+            {"label": "IAU OAE National Astronomy Education", "url": "https://astro4edu.org/naec-network/MA"},
+            {"label": "universities for Astrophysics and Astronomy", "url": "https://edurank.org/physics/astrophysics/ma/"},
+            {"label": "Astronomer Salary", "url": "https://www.salaryexpert.com/salary/job/astronomer/morocco"}
+            ] 
+                    },
     "veterinarian": {
         "title": "Veterinarian 🐾",
         "description": "Veterinarians diagnose and treat health issues in animals, ensuring their well-being and preventing disease spread.",
-        "image": "./assets/jobs/veterinarian.png"
-    },
+             "links": [
+            {"label": "IAU OAE National Astronomy Education", "url": "https://astro4edu.org/naec-network/MA"},
+            {"label": "universities for Astrophysics and Astronomy", "url": "https://edurank.org/physics/astrophysics/ma/"},
+            {"label": "Astronomer Salary", "url": "https://www.salaryexpert.com/salary/job/astronomer/morocco"}
+            ]     },
     "nature_photographer": {
         "title": "Nature Photographer 📷",
         "description": "Nature photographers capture the beauty of the natural world, highlighting wildlife and landscapes through imagery.",
-        "image": "./assets/jobs/nature_photographer.png"
-    },
+ "links": [
+            {"label": "IAU OAE National Astronomy Education", "url": "https://astro4edu.org/naec-network/MA"},
+            {"label": "universities for Astrophysics and Astronomy", "url": "https://edurank.org/physics/astrophysics/ma/"},
+            {"label": "Astronomer Salary", "url": "https://www.salaryexpert.com/salary/job/astronomer/morocco"}
+            ] 
+                    },
     "recording_engineer": {
         "title": "Recording Engineer 🎚️",
         "description": "Recording engineers manage the technical aspects of audio recording, ensuring high-quality sound production.",
-        "image": "./assets/jobs/recording_engineer.png"
-    },
+          "links": [
+            {"label": "IAU OAE National Astronomy Education", "url": "https://astro4edu.org/naec-network/MA"},
+            {"label": "universities for Astrophysics and Astronomy", "url": "https://edurank.org/physics/astrophysics/ma/"},
+            {"label": "Astronomer Salary", "url": "https://www.salaryexpert.com/salary/job/astronomer/morocco"}
+            ]     },
     "audiologist": {
         "title": "Audiologist 👂",
         "description": "Audiologists specialize in diagnosing and treating hearing and balance disorders, improving patients' auditory health.",
-        "image": "./assets/jobs/audiologist.png"
-    },
+ "links": [
+            {"label": "IAU OAE National Astronomy Education", "url": "https://astro4edu.org/naec-network/MA"},
+            {"label": "universities for Astrophysics and Astronomy", "url": "https://edurank.org/physics/astrophysics/ma/"},
+            {"label": "Astronomer Salary", "url": "https://www.salaryexpert.com/salary/job/astronomer/morocco"}
+            ]     },
     "sound_editor": {
         "title": "Sound Editor 🎧",
         "description": "Sound editors assemble and refine audio tracks for media productions, enhancing the overall auditory experience.",
-        "image": "./assets/jobs/sound_editor.png"
-    },
+ "links": [
+            {"label": "IAU OAE National Astronomy Education", "url": "https://astro4edu.org/naec-network/MA"},
+            {"label": "universities for Astrophysics and Astronomy", "url": "https://edurank.org/physics/astrophysics/ma/"},
+            {"label": "Astronomer Salary", "url": "https://www.salaryexpert.com/salary/job/astronomer/morocco"}
+            ]     },
     "music_teacher": {
         "title": "Music Teacher 🎼",
         "description": "Music teachers educate students in music theory and practice, fostering musical skills and appreciation.",
-        "image": "./assets/jobs/music_teacher.png"
-    },
+ "links": [
+            {"label": "IAU OAE National Astronomy Education", "url": "https://astro4edu.org/naec-network/MA"},
+            {"label": "universities for Astrophysics and Astronomy", "url": "https://edurank.org/physics/astrophysics/ma/"},
+            {"label": "Astronomer Salary", "url": "https://www.salaryexpert.com/salary/job/astronomer/morocco"}
+            ]     },
     "actuary": {
         "title": "Actuary 📊",
         "description": "Actuaries analyze financial risks using mathematics and statistics to aid in decision-making processes.",
-        "image": "./assets/jobs/actuary.png"
-    },
+ "links": [
+            {"label": "IAU OAE National Astronomy Education", "url": "https://astro4edu.org/naec-network/MA"},
+            {"label": "universities for Astrophysics and Astronomy", "url": "https://edurank.org/physics/astrophysics/ma/"},
+            {"label": "Astronomer Salary", "url": "https://www.salaryexpert.com/salary/job/astronomer/morocco"}
+            ]     },
     "chartered_accountant": {
         "title": "Chartered Accountant 💼",
         "description": "Chartered accountants manage financial records, audits, and tax matters, ensuring fiscal responsibility.",
-        "image": "./assets/jobs/chartered_accountant.png"
-    },
+ "links": [
+            {"label": "IAU OAE National Astronomy Education", "url": "https://astro4edu.org/naec-network/MA"},
+            {"label": "universities for Astrophysics and Astronomy", "url": "https://edurank.org/physics/astrophysics/ma/"},
+            {"label": "Astronomer Salary", "url": "https://www.salaryexpert.com/salary/job/astronomer/morocco"}
+            ]     },
     "computer_analyst": {
         "title": "Computer Analyst 🖥️",
         "description": "Computer analysts evaluate and improve computer systems, enhancing organizational efficiency.",
-        "image": "./assets/jobs/computer_analyst.png"
-    },
+ "links": [
+            {"label": "IAU OAE National Astronomy Education", "url": "https://astro4edu.org/naec-network/MA"},
+            {"label": "universities for Astrophysics and Astronomy", "url": "https://edurank.org/physics/astrophysics/ma/"},
+            {"label": "Astronomer Salary", "url": "https://www.salaryexpert.com/salary/job/astronomer/morocco"}
+            ]     },
     "computer_programmer": {
         "title": "Computer Programmer 💻",
         "description": "Computer programmers write and test code that enables software applications to function effectively.",
-        "image": "./assets/jobs/computer_programmer.png"
-    },
+ "links": [
+            {"label": "IAU OAE National Astronomy Education", "url": "https://astro4edu.org/naec-network/MA"},
+            {"label": "universities for Astrophysics and Astronomy", "url": "https://edurank.org/physics/astrophysics/ma/"},
+            {"label": "Astronomer Salary", "url": "https://www.salaryexpert.com/salary/job/astronomer/morocco"}
+            ]     },
     "database_designer": {
         "title": "Database Designer 🗄️",
         "description": "Database designers create structured data storage systems, facilitating efficient data retrieval and management.",
-        "image": "./assets/jobs/database_designer.png"
-    },
+ "links": [
+            {"label": "IAU OAE National Astronomy Education", "url": "https://astro4edu.org/naec-network/MA"},
+            {"label": "universities for Astrophysics and Astronomy", "url": "https://edurank.org/physics/astrophysics/ma/"},
+            {"label": "Astronomer Salary", "url": "https://www.salaryexpert.com/salary/job/astronomer/morocco"}
+            ]     },
     "economist": {
         "title": "Economist 📈",
         "description": "Economists study economic trends and data to advise on policy and business strategies.",
-        "image": "./assets/jobs/economist.png"
-    },
+ "links": [
+            {"label": "IAU OAE National Astronomy Education", "url": "https://astro4edu.org/naec-network/MA"},
+            {"label": "universities for Astrophysics and Astronomy", "url": "https://edurank.org/physics/astrophysics/ma/"},
+            {"label": "Astronomer Salary", "url": "https://www.salaryexpert.com/salary/job/astronomer/morocco"}
+            ] 
+                    },
     "librarian": {
         "title": "Librarian 📚",
         "description": "Librarians manage information resources, assisting patrons in accessing and utilizing various materials.",
-        "image": "./assets/jobs/librarian.png"
-    },
+ "links": [
+            {"label": "IAU OAE National Astronomy Education", "url": "https://astro4edu.org/naec-network/MA"},
+            {"label": "universities for Astrophysics and Astronomy", "url": "https://edurank.org/physics/astrophysics/ma/"},
+            {"label": "Astronomer Salary", "url": "https://www.salaryexpert.com/salary/job/astronomer/morocco"}
+            ]     },
     "engineer": {
         "title": "Engineer 🛠️",
         "description": "Engineers apply scientific principles to design and build structures, machines, and systems.",
-        "image": "./assets/jobs/engineer.png"
-    },
+ "links": [
+            {"label": "IAU OAE National Astronomy Education", "url": "https://astro4edu.org/naec-network/MA"},
+            {"label": "universities for Astrophysics and Astronomy", "url": "https://edurank.org/physics/astrophysics/ma/"},
+            {"label": "Astronomer Salary", "url": "https://www.salaryexpert.com/salary/job/astronomer/morocco"}
+            ]     },
     "lawyer": {
         "title": "Lawyer ⚖️",
         "description": "Lawyers provide legal advice, represent clients in court, and draft legal documents.",
-        "image": "./assets/jobs/lawyer.png"
-    },
+ "links": [
+            {"label": "IAU OAE National Astronomy Education", "url": "https://astro4edu.org/naec-network/MA"},
+            {"label": "universities for Astrophysics and Astronomy", "url": "https://edurank.org/physics/astrophysics/ma/"},
+            {"label": "Astronomer Salary", "url": "https://www.salaryexpert.com/salary/job/astronomer/morocco"}
+            ]     },
     "pharmacist": {
         "title": "Pharmacist 💊",
         "description": "Pharmacists dispense medications and counsel patients on their proper use and potential side effects.",
-        "image": "./assets/jobs/pharmacist.png"
-    },
+ "links": [
+            {"label": "IAU OAE National Astronomy Education", "url": "https://astro4edu.org/naec-network/MA"},
+            {"label": "universities for Astrophysics and Astronomy", "url": "https://edurank.org/physics/astrophysics/ma/"},
+            {"label": "Astronomer Salary", "url": "https://www.salaryexpert.com/salary/job/astronomer/morocco"}
+            ]     },
     "physician": {
         "title": "Physician 🩺",
         "description": "Physicians diagnose and treat illnesses, promoting overall health and wellness.",
-        "image": "./assets/jobs/physician.png"
-    },
+ "links": [
+            {"label": "IAU OAE National Astronomy Education", "url": "https://astro4edu.org/naec-network/MA"},
+            {"label": "universities for Astrophysics and Astronomy", "url": "https://edurank.org/physics/astrophysics/ma/"},
+            {"label": "Astronomer Salary", "url": "https://www.salaryexpert.com/salary/job/astronomer/morocco"}
+            ]     },
     "physicist": {
         "title": "Physicist 🧪",
         "description": "Physicists explore the laws of nature, conducting experiments to understand physical phenomena.",
-        "image": "./assets/jobs/physicist.png"
-    },
+ "links": [
+            {"label": "IAU OAE National Astronomy Education", "url": "https://astro4edu.org/naec-network/MA"},
+            {"label": "universities for Astrophysics and Astronomy", "url": "https://edurank.org/physics/astrophysics/ma/"},
+            {"label": "Astronomer Salary", "url": "https://www.salaryexpert.com/salary/job/astronomer/morocco"}
+            ]     },
     "mathematician": {
         "title": "Mathematician ➗",
         "description": "Mathematicians develop theories and solve problems using mathematical techniques.",
-        "image": "./assets/jobs/mathematician.png"
-    },
+ "links": [
+            {"label": "IAU OAE National Astronomy Education", "url": "https://astro4edu.org/naec-network/MA"},
+            {"label": "universities for Astrophysics and Astronomy", "url": "https://edurank.org/physics/astrophysics/ma/"},
+            {"label": "Astronomer Salary", "url": "https://www.salaryexpert.com/salary/job/astronomer/morocco"}
+            ]     },
     "leader": {
         "title": "Leader 🧭",
         "description": "Leaders guide organizations or groups towards achieving goals through strategic decision-making.",
-        "image": "./assets/jobs/leader.png"
-    },
+ "links": [
+            {"label": "IAU OAE National Astronomy Education", "url": "https://astro4edu.org/naec-network/MA"},
+            {"label": "universities for Astrophysics and Astronomy", "url": "https://edurank.org/physics/astrophysics/ma/"},
+            {"label": "Astronomer Salary", "url": "https://www.salaryexpert.com/salary/job/astronomer/morocco"}
+            ]     },
     "manager": {
         "title": "Manager 📋",
         "description": "Managers oversee operations and teams, ensuring productivity and goal attainment.",
-        "image": "./assets/jobs/manager.png"
-    },
+ "links": [
+            {"label": "IAU OAE National Astronomy Education", "url": "https://astro4edu.org/naec-network/MA"},
+            {"label": "universities for Astrophysics and Astronomy", "url": "https://edurank.org/physics/astrophysics/ma/"},
+            {"label": "Astronomer Salary", "url": "https://www.salaryexpert.com/salary/job/astronomer/morocco"}
+            ] 
+                    },
     "politician": {
         "title": "Politician 🏛️",
         "description": "Politicians represent the public, crafting policies and making decisions on governance.",
@@ -440,8 +467,12 @@ job_data = {
     "Pre Primary Teacher (2020 NEP and Mental Health)": {
         "title": "Pre-Primary Teacher 🎨",
         "description": "Pre-primary teachers nurture young minds, laying the foundation for lifelong learning.",
-        "image": "./assets/jobs/pre_primary_teacher.png"
-    },
+        "links": [
+            {"label": "OFPPT Official Website", "url": "https://www.ofppt.ma"},
+            {"label": "Orientations.ma - Career Guidance", "url": "https://www.orientations.ma/"},
+            {"label": "Skills.ma - Vocational Training Opportunities", "url": "https://www.skills.ma"}
+            ]    
+        },
     "Primary Teacher": {
         "title": "Primary School Teacher ✏️",
         "description": "Primary teachers educate children in their early, most formative years.",
@@ -494,58 +525,198 @@ job_data = {
     }
 }
 
-    
+   
 # ---------- Get Prediction from Session ----------
 if "prediction" not in st.session_state:
     st.error("No prediction found. Please take the test first.")
     st.stop()
+if "probabilities" not in st.session_state: 
+    st.error("No prediction found. Please take the test first.")
+    st.stop()
 
-job_key = st.session_state["prediction"][0]
-job = job_data.get(job_key) 
+def normalize_key(s):
+    # Remove parentheses and content inside
+    s = re.sub(r"\s*\(.*?\)", "", s)
+    # Strip spaces, lowercase, and replace inner spaces with underscores
+    return s.strip().lower().replace(" ", "_")
+
+normalized_job_data = {normalize_key(key): value for key, value in job_data.items()}
+
+# job_key = st.session_state["prediction"][0].lower()
+# job = job_data.get(job_key)
+
+# Normalize the prediction
+job_key = normalize_key(st.session_state["prediction"][0])
+
+# Fetch the job details safely
+job = normalized_job_data.get(job_key)
+if not job: 
+    st.stop()
+# ---------- getting of session state  ----------
+
+
+
+probabilities = st.session_state.get("probabilities")
+class_labels = st.session_state.get("class_labels")
+prob_df = pd.DataFrame(probabilities, columns=class_labels)
+prob_df = prob_df.transpose()  # Transpose to get job titles on the y-axis
+prob_df.columns = ['Probability (%)']
+prob_df['Probability (%)'] = prob_df['Probability (%)'] * 100  # Convert to percentage
+prob_df = prob_df.sort_values('Probability (%)', ascending=False)
+
+# ---------- Title - centered---------- 
+
+# Show the most likely job profession
+most_likely_job = prob_df.idxmax()[0]  # Get the job profession with the highest probability
+#st.subheader(f"The most likely job for you is: {most_likely_job} with {prob_df.max()[0]:.2f}% probability.")
+#st.subheader("The most likely job for you is:")
+st.markdown(f"""
+    <div style='text-align: center; margin-bottom: 30px;'>
+        <p style='color: #7c6784; font-size: 1.3em; font-family: "Georgia", serif; margin: 0; letter-spacing: 0.4px;'>
+            The Most Likely Career Path That Could Fit You Is:
+        </p>
+        <h1 style='color: #b03a64; font-size: 2.8em; font-weight: bold; font-family: "Segoe UI", sans-serif; text-transform: capitalize;'>
+            {job['title']}
+        </h1>
+    </div>
+""", unsafe_allow_html=True)
+
+
+
+    
+
+     
+
+# ---------- Visualization of prediction ----------
+
+st.markdown("#### 🎯 Top 5 Career Matches For You: ")
+st.markdown("<br>", unsafe_allow_html=True)  # Adds a vertical space
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.markdown("""
+        This chart highlights the **top 5 career options** that best align with your unique skill set.
+        Each segment represents the **probability (%)** of you succeeding in that profession based on your input.
+        The bigger the slice, the more likely that career is the right match for you.
+    """)
+
+with col2:
+
+    top_probs = prob_df.head(5)
+
+    fig, ax = plt.subplots(figsize=(3.5, 3.5), facecolor='none')  # Smaller size to match Plotly
+    ax.set_facecolor('none')
+
+    ax.pie(
+        top_probs['Probability (%)'], 
+        labels=top_probs.index, 
+        autopct='%1.1f%%', 
+        startangle=140,
+        colors=plt.cm.Paired.colors
+    )
+    ax.axis('equal')
+
+    st.pyplot(fig, clear_figure=True)
+
+
+st.markdown("#### 📊 Skills That Shape Your Career Match: ")
+st.markdown("<br>", unsafe_allow_html=True)  # Adds a vertical space
+
+col1, col2 = st.columns(2)  # Wider text column for explanation
+with col1:
+    st.markdown("""
+        This radar chart maps your performance across **eight core intelligences** such as *logical*, *interpersonal*, and *musical*.
+        The shape of the chart reveals which skills are most developed and **how they influenced your top career match**.
+    """)
+
+with col2:
+    skills = ['Linguistic', 'Musical', 'Bodily', 'Logical - Mathematical', 
+              'Spatial-Visualization', 'Interpersonal', 'Intrapersonal', 'Naturalist']
+    values = st.session_state.get("user_skills", [10]*8)
+
+    fig = go.Figure(data=go.Scatterpolar(
+        r=values,
+        theta=skills,
+        fill='toself',
+        name='Your Profile'
+    ))
+
+    fig.update_layout(
+        polar=dict(radialaxis=dict(visible=True, range=[0, 20])),
+        showlegend=False,
+        autosize=False,
+        width=350,
+        height=350,
+        margin=dict(t=20, b=20, l=20, r=20),
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)'
+    )
+
+    st.plotly_chart(fig, use_container_width=False)
+
+
+
+
+
+# st.subheader("How each job matches your profile:")
+# for job1, prob in prob_df['Probability (%)'].head(10).items():
+#     st.markdown(f"**{job1}**")
+#     st.progress(int(prob))
+
+
+
+    
+
+ 
+
+
 
 # ---------- Display Job Info ----------
-if job:
-    # Title - centered
-    st.markdown(f"<h1 style='color:#b03a64; text-align: center;'>{job['title']}</h1>", unsafe_allow_html=True)
-    
-    
-    col1, col2 = st.columns(2)  # Create three columns again for centering the button
-    with col1:
-        st.subheader("🚗 Road to Becoming a Mechanic in Morocco")
-        # Description and back link - centered
-        st.markdown(f"""
-            <div class="career-description" style="font-size: 1.1em; color: #5e4b56; text-align: center; max-width: 700px; margin: 20px auto;">
-                {job['description']}
-            </div>
-            <br>
-        """, unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)  # Adds a vertical space
 
-    with col2:
-        st.markdown('<div class="section">', unsafe_allow_html=True)
-        st.subheader("🔗 External Resources to Explore")
+col1, col2 = st.columns(2)  # Create three columns again for centering the button
+with col1:
+    st.subheader("📝 Detailled Job Description: ")
+    # Description and back link - centered
+    st.markdown(f"""
+        <div class="career-description" style="font-size: 1.1em; color: #5e4b56; text-align: center; max-width: 700px; margin: 20px auto;">
+            {job['description']}
+        </div>
+        <br>
+    """, unsafe_allow_html=True)
 
-        st.markdown('<a class="section" href="https://www.ofppt.ma" target="_blank">OFPPT Official Website</a>', unsafe_allow_html=True)
-        st.markdown('<a class="resource-link" href="https://www.orientations.ma/" target="_blank">Orientations.ma - Career Guidance</a>', unsafe_allow_html=True)
-        st.markdown('<a class="resource-link" href="https://www.skills.ma" target="_blank">Skills.ma - Vocational Training Opportunities</a>', unsafe_allow_html=True)
+with col2:
+    st.subheader("🔗 External Resources to Explore the Job: ")
+    st.markdown("<br>", unsafe_allow_html=True)  # Adds a vertical space
 
+    for link in job.get("links", []):
+        st.markdown(f'<a class="resource-link" href="{link["url"]}" target="_blank">{link["label"]}</a>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
 
-    # # Centering the image with st.image
-    # col1, col2, col3 = st.columns([1, 2, 1])  # Create three columns to center the image
-    # with col2:
-    #     st.image(job["image"], width=300)
+# # Centering the image with st.image
+# col1, col2, col3 = st.columns([1, 2, 1])  # Create three columns to center the image
+# with col2:
+#     st.image(job["image"], width=300)
 
 
 
-    # Centering the back button
-    col1, col2, col3 = st.columns([1, 2, 1])  # Create three columns again for centering the button
-    with col2:
-        st.markdown("""
-            <a href="/" class="back-button" style="text-decoration: none; font-weight: bold; color: #b03a64; text-align: center;">← Back to Home</a>
-        """, unsafe_allow_html=True)
-    
 
+# Centering the back button
+st.markdown("<br>", unsafe_allow_html=True)  # Adds a vertical space
+st.markdown("<br>", unsafe_allow_html=True)  # Adds a vertical space
+
+
+st.markdown("""
+                    
+    <div style='text-align:center'>
+        <a href="/stories" class="back-button" style="text-decoration: none; font-weight: bold; color: #b03a64; text-align: center;">← Go to Stories</a>
+    </div>
+            """, unsafe_allow_html=True)
+
+
+st.markdown("<div class='footer'>Made with 💖 by girls, for girls | #SheCan</div>", unsafe_allow_html=True)
 
 
 

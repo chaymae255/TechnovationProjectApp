@@ -25,7 +25,12 @@ st.markdown("""
         color: #b03a64;
         text-align: center;
     }
-
+    .footer {
+        text-align: center;
+        margin-top: 50px;
+        font-size: 13px;
+        color: #777;
+    }
     .stForm {
         background-color: #ffffffdd;
         padding: 30px;
@@ -113,10 +118,6 @@ if submit_button:
     #prob_df = prob_df.sort_values('Probability (%)', ascending=False)
     st.session_state["user_skills"] = [linguistic, musical, bodily, logical, spatial, interpersonal, intrapersonal, naturalist]
     st.switch_page("./pages/prediction.py")
-    
-else:
-    st.warning("We don't yet have a dedicated page for your career. Check back soon!")
 
-if st.button("stg"): 
-    st.switch_page("./pages/prediction.py")
-    
+
+st.markdown("<div class='footer'>Made with 💖 by girls, for girls | #SheCan</div>", unsafe_allow_html=True)

@@ -102,33 +102,45 @@ st.markdown("""
 st.markdown("<h1>Welcome to SheCan 🌸</h1>", unsafe_allow_html=True)
 st.markdown("<div class='tagline'>Your Future. Your Power. Your Choice.</div>", unsafe_allow_html=True)
 
-st.markdown("""
-    <div class='description'>
-        SheCan is more than just a tool – it's your companion on the path to discovering who you are and what you're capable of. 
-        Take a test based on your natural talents and find the career path that fits you best. 
-        Or get inspired by other girls like you who dared to dream big and succeeded.
+
+
+col1, col2 = st.columns(2)
+with col1:
+    st.markdown("""
+    <div style="display: flex; align-items: flex-start; justify-content: center; gap: 40px; flex-wrap: wrap; margin-top: 20px;">
+        <div style="max-width: 400px; font-size: 1.1em; color: #5e4b56; line-height: 1.6;">
+            <p><strong>SheCan</strong> is your companion on the path to discovering who you are and what you're capable of. 
+            Take a test based on your natural talents and find the career path that fits you best. 
+            Or get inspired by other girls like you who dared to dream big and succeeded.</p>
+        </div>        
+       
     </div>
 """, unsafe_allow_html=True)
+with col2:
+    st.markdown("""
+    <div style="display: flex; align-items: flex-start; justify-content: center; gap: 40px; flex-wrap: wrap; margin-top: 20px;">
+           
+    <div style="max-width: 400px; font-size: 1.1em; color: #5e4b56; line-height: 1.6;">
+            <p><strong>SheCan</strong> is your guide to uncovering your strengths and matching them with the perfect career path. 
+            This is where dreams meet action and confidence begins to grow.</p>
+        </div>   
+       
+    </div>
+""", unsafe_allow_html=True)
+
 
 st.markdown("<div class='arrow'>👇</div>", unsafe_allow_html=True)
 
 st.markdown("""
     <div class='button-container'>
         <a href='/test_model' target="_self" class='button-custom'>💡 Take the Test ➜</a>
-        <a href='/pages/stories.py' class='button-custom button-secondary'>🌟 Success Stories ➜</a>
+        <a href='/stories' class='button-custom button-secondary'>🌟 Success Stories ➜</a>
     </div>
 """, unsafe_allow_html=True)
 
 st.markdown("</div>", unsafe_allow_html=True)
 
+
 st.markdown("<div class='footer'>Made with 💖 by girls, for girls | #SheCan</div>", unsafe_allow_html=True)
 
-st.markdown("""
-    <div style="display: flex; align-items: center; justify-content: center; gap: 30px; flex-wrap: wrap;">
-        <img src="assets/images/she" alt="SheCan Girl" >
-        <div style="max-width: 400px; font-size: 1.1em; color: #5e4b56;">
-            <p><strong>SheCan</strong> is your guide to discovering your strengths and matching them with the perfect career path. This is where dreams meet action!</p>
-        </div>
-    </div>
-""", unsafe_allow_html=True)
-st.image("./assets/images/she.png")
+

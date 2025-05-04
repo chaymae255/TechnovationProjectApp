@@ -15,10 +15,11 @@ st.markdown("""
         color: #4A4A4A;
     }
     .title {
+        font-weight: bold;
         font-size: 3em;
         text-align: center;
         color: #c2185b;
-        margin-bottom: 0.5em;
+        margin-bottom: 0.2em;
     }
     .subtitle {
         font-size: 1.8em;
@@ -62,12 +63,19 @@ st.markdown("""
     .back-button:hover {
         background-color: #EC407A;
     }
+    .footer {
+        text-align: center;
+        margin-top: 50px;
+        font-size: 13px;
+        color: #777;
+    }
     </style>
 """, unsafe_allow_html=True)
 
 # Main Title
 st.markdown("<div class='title'>SheCan Stories 💫</div>", unsafe_allow_html=True)
 
+st.write("Discover the Stories of Remarkable Women Who Are Challenging Norms and Inspiring Change in Various Fields: ")
 # Loop through all jobs inside 'assets'
 base_path = os.getcwd()
 assets_dir = os.path.join(base_path, "assets")
@@ -79,6 +87,7 @@ for job in os.listdir(assets_dir):
 
     # Subtitle for the job
     st.markdown(f"<div class='subtitle'>{job.capitalize()} 👩‍🔧</div>", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)  # Adds a vertical space
 
     # Story Cards
     cols = st.columns(3)
@@ -105,8 +114,11 @@ for job in os.listdir(assets_dir):
             story_count += 1
 
 # Back Button
+
 st.markdown("""
-    <div class='back-link'>
-        <a href='/' class='back-button'>⬅ Back to Home</a>
-    </div>
-""", unsafe_allow_html=True)
+        <div style='text-align:center'>
+        <a href="/" class="back-button" style="text-decoration: none; font-weight: bold; color: #b03a64; text-align: center;">← Back To Home</a>
+    </div>  
+        """, unsafe_allow_html=True)
+
+st.markdown("<div class='footer'>Made with 💖 by girls, for girls | #SheCan</div>", unsafe_allow_html=True)
